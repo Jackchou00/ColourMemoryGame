@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Colour Memory Game</title>
+    <style>
+        body {
+            background-color: black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        #game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #color-block, .grid-block {
+            width: 100px;
+            height: 100px;
+            margin: 2px;
+        }
+        #color-grid {
+            display: none;
+            flex-wrap: wrap;
+        }
+        #result {
+            display: none;
+            margin-top: 20px;
+        }
+        button {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="color-block"></div>
+        <div id="color-grid"></div>
+        <div id="result"></div>
+        <div>
+            <button id="easy-button">简单</button>
+            <button id="medium-button">中等</button>
+            <button id="hard-button">困难</button>
+        </div>
+        <button id="restart-button">Restart</button>
+    </div>
+
+    <script>
+        let originalLab = { L: 50, a: 0, b: 0 }; // Example Lab1
+        const randomColors = [];
+        let selectedColor = null;
+        let difficulty = 100; // Default to hard
+
+        const colorBlock = document.getElementById('color-block');
+        const colorGrid = document.getElementById('color-grid');
+        const result = document.getElementById('result');
+        const restartButton = document.getElementById('restart-button');
+        const easyButton = document.getElementById('easy-button');
+        const mediumButton = document.getElementById('medium-button');
+        const hardButton = document.getElementById('hard-button');
+
+        function labToRgb(L, a, b) {
+            let y = (L + 16) / 116;
+            let x = a / 500 + y;
+            let z = y - b / 200;
+
+            const adjust = (val) => {
+                const v = Math.pow(val, 3);
+                return v > 0.008856 ? v : (val - 16 / 116) / 7.787;
+            };
+
+            x = adjust(x) * 95.047;
+            y = adjust(y) * 100.000;
+            z = adjust(z) * 108.883;
+
+            x /= 100;
+            y /= 100;
+            z /= 100;
+
+            let R = x * 3.2406 + y * -1.5372 + z * -0.4986;
+            let G = x * -0.9689 + y * 1.8758 + z * 0.0415;
+            let B = x * 0.0557 + y * -0.2040 + z * 1.0570;
+
+            R = R > 0.0031308 ? 1.055 * Math.pow(R, 1 / 2.4) - 0.055 : 12.92 * R;
+            G = G > 0.0031308 ? 1.055 * Math.pow(G, 1 / 2.4) - 0.055 : 12.92 * G;
+            B = B > 0.0031308 ? 1.055 * Math.pow(B, 1 / 2.4) - 0.055 : 12.92 * B;
+
+            return `rgb(${Math.max(0, Math.min(1, R)) * 255}, ${Math.max(0, Math.min(1, G)) * 255}, ${Math.max(0, Math.min(1, B)) * 255})`;
+        }
+
+        function deltaE(lab1, lab2) {
+            const deltaL = lab1.L - lab2.L;
+            const deltaA = lab1.a - lab2.a;
+            const deltaB = lab1.b - lab2.b;
+            return Math.sqrt(deltaL * deltaL + deltaA * deltaA + deltaB * deltaB);
+        }
+
+        function showRandomColors() {
+            colorBlock.style.display = 'none';
+            colorGrid.innerHTML = '';
+            randomColors.length = 0;
+
+            // Ensure original color is included
+            const originalColorBlock = document.createElement('div');
+            originalColorBlock.className = 'grid-block';
+            originalColorBlock.style.backgroundColor = labToRgb(originalLab.L, originalLab.a, originalLab.b);
+            originalColorBlock.onclick = () => endGame(originalLab);
+
+            // Generate random colors
+            for (let i = 1; i < difficulty; i++) { // Start from 1 to leave space for original color
+                const L = originalLab.L + [-4, -2, 0, 2, 4][Math.floor(Math.random() * 5)];
+                const a = originalLab.a + [-4, -2, 0, 2, 4][Math.floor(Math.random() * 5)];
+                const b = originalLab.b + [-4, -2, 0, 2, 4][Math.floor(Math.random() * 5)];
+
+                const color = { L, a, b };
+                randomColors.push(color);
+
+                const block = document.createElement('div');
+                block.className = 'grid-block';
+                block.style.backgroundColor = labToRgb(L, a, b);
+                block.onclick = () => endGame(color);
+                colorGrid.appendChild(block);
+            }
+
+            // Insert original color block at a random position
+            const randomIndex = Math.floor(Math.random() * difficulty);
+            colorGrid.insertBefore(originalColorBlock, colorGrid.children[randomIndex]);
+
+            // Adjust grid width based on difficulty
+            if (difficulty === 9) {
+                colorGrid.style.width = '312px'; // 3x3 grid
+            } else if (difficulty === 25) {
+                colorGrid.style.width = '520px'; // 5x5 grid
+            } else {
+                colorGrid.style.width = '1040px'; // 10x10 grid
+            }
+
+            colorGrid.style.display = 'flex';
+        }
+
+        function endGame(selectedLab) {
+            selectedColor = selectedLab;
+            colorGrid.style.display = 'none';
+            const delta = deltaE(originalLab, selectedLab);
+
+            result.innerHTML = `
+                <div>Original: ${JSON.stringify(originalLab)}</div>
+                <div>Selected: ${JSON.stringify(selectedLab)}</div>
+                <div>ΔE: ${delta.toFixed(2)}</div>
+            `;
+            result.style.display = 'block';
+        }
+
+        function startGame() {
+            // originalLab = { L: Math.floor(Math.random() * 100), a: Math.floor(Math.random() * 200) - 100, b: Math.floor(Math.random() * 200) - 100 };
+            originalLab = { L: 50, a: 0, b: 0 }; // Example Lab1
+            colorBlock.style.backgroundColor = labToRgb(originalLab.L, originalLab.a, originalLab.b);
+            colorBlock.style.display = 'block';
+            colorGrid.style.display = 'none';
+            result.style.display = 'none';
+
+            colorBlock.onclick = showRandomColors; // Show random colors on click
+        }
+
+        easyButton.addEventListener('click', () => { difficulty = 9; startGame(); });
+        mediumButton.addEventListener('click', () => { difficulty = 25; startGame(); });
+        hardButton.addEventListener('click', () => { difficulty = 100; startGame(); });
+        restartButton.addEventListener('click', startGame);
+
+        startGame();
+    </script>
+</body>
+</html>
