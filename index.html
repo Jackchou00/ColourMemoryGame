@@ -136,9 +136,9 @@
 
             // Generate random colors
             for (let i = 1; i < difficulty; i++) { // Start from 1 to leave space for original color
-                const L = originalLab.L + [-4, -2, 0, 2, 4][Math.floor(Math.random() * 5)];
-                const a = originalLab.a + [-4, -2, 0, 2, 4][Math.floor(Math.random() * 5)];
-                const b = originalLab.b + [-4, -2, 0, 2, 4][Math.floor(Math.random() * 5)];
+                const L = originalLab.L + (Math.floor(Math.random() * 11) - 5);
+                const a = originalLab.a + (Math.floor(Math.random() * 11) - 5);
+                const b = originalLab.b + (Math.floor(Math.random() * 11) - 5);
 
                 const color = { L, a, b };
                 randomColors.push(color);
@@ -193,7 +193,7 @@
             if (colorMode === 'grayscale') {
                 originalLab = { L: Math.floor(Math.random() * 80) + 10, a: 0, b: 0 };
             } else {
-                originalLab = { L: Math.floor(Math.random() * 100), a: Math.floor(Math.random() * 200) - 100, b: Math.floor(Math.random() * 200) - 100 };
+                originalLab = { L: Math.floor(Math.random() * 80) + 10, a: Math.floor(Math.random() * 140) - 70, b: Math.floor(Math.random() * 140) - 70 };
             }
             colorBlock.style.backgroundColor = labToRgb(originalLab.L, originalLab.a, originalLab.b);
             colorBlock.style.display = 'block';
