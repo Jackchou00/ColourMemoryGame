@@ -172,9 +172,19 @@
             const delta = deltaE(originalLab, selectedLab);
 
             result.innerHTML = `
-                <div>Original: ${JSON.stringify(originalLab)}</div>
-                <div>Selected: ${JSON.stringify(selectedLab)}</div>
-                <div>ΔE: ${delta.toFixed(2)}</div>
+                <div style="display: flex; align-items: center; justify-content: center;">
+                    <div style="text-align: center;">
+                        <div>Original:</div>
+                        <div style="width: 100px; height: 100px; background-color: ${labToRgb(originalLab.L, originalLab.a, originalLab.b)};"></div>
+                        <div>L: ${originalLab.L}, a: ${originalLab.a}, b: ${originalLab.b}</div>
+                    </div>
+                    <div style="text-align: center; margin-left: 10px;">
+                        <div>Selected:</div>
+                        <div style="width: 100px; height: 100px; background-color: ${labToRgb(selectedLab.L, selectedLab.a, selectedLab.b)};"></div>
+                        <div>L: ${selectedLab.L}, a: ${selectedLab.a}, b: ${selectedLab.b}</div>
+                    </div>
+                </div>
+                <div style="margin-top: 20px;">ΔEab: ${delta.toFixed(2)}</div>
             `;
             result.style.display = 'block';
         }
