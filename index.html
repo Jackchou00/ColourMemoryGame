@@ -36,17 +36,36 @@
         button {
             margin-top: 20px;
         }
+        .tabs {
+            display: flex;
+            margin-top: 20px;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: #333;
+            color: white;
+            border: 1px solid #444;
+        }
+        .tab.active {
+            background-color: #555;
+        }
     </style>
 </head>
 <body>
     <div id="game-container">
+        <div id="instructions">Press to start / Memorize it and select</div>
         <div id="color-block"></div>
         <div id="color-grid"></div>
         <div id="result"></div>
-        <div>
-            <button id="easy-button">简单</button>
-            <button id="medium-button">中等</button>
-            <button id="hard-button">困难</button>
+        <div class="tabs">
+            <div id="easy-tab" class="tab">简单</div>
+            <div id="medium-tab" class="tab">中等</div>
+            <div id="hard-tab" class="tab">困难</div>
+        </div>
+        <div class="tabs">
+            <div id="grayscale-tab" class="tab">灰度</div>
+            <div id="color-tab" class="tab">彩色</div>
         </div>
         <button id="restart-button">Restart</button>
     </div>
@@ -56,14 +75,17 @@
         const randomColors = [];
         let selectedColor = null;
         let difficulty = 100; // Default to hard
+        let colorMode = 'color'; // Default to color
 
         const colorBlock = document.getElementById('color-block');
         const colorGrid = document.getElementById('color-grid');
         const result = document.getElementById('result');
         const restartButton = document.getElementById('restart-button');
-        const easyButton = document.getElementById('easy-button');
-        const mediumButton = document.getElementById('medium-button');
-        const hardButton = document.getElementById('hard-button');
+        const easyTab = document.getElementById('easy-tab');
+        const mediumTab = document.getElementById('medium-tab');
+        const hardTab = document.getElementById('hard-tab');
+        const grayscaleTab = document.getElementById('grayscale-tab');
+        const colorTab = document.getElementById('color-tab');
 
         function labToRgb(L, a, b) {
             let y = (L + 16) / 116;
@@ -158,8 +180,11 @@
         }
 
         function startGame() {
-            // originalLab = { L: Math.floor(Math.random() * 100), a: Math.floor(Math.random() * 200) - 100, b: Math.floor(Math.random() * 200) - 100 };
-            originalLab = { L: 50, a: 0, b: 0 }; // Example Lab1
+            if (colorMode === 'grayscale') {
+                originalLab = { L: Math.floor(Math.random() * 80) + 10, a: 0, b: 0 };
+            } else {
+                originalLab = { L: Math.floor(Math.random() * 100), a: Math.floor(Math.random() * 200) - 100, b: Math.floor(Math.random() * 200) - 100 };
+            }
             colorBlock.style.backgroundColor = labToRgb(originalLab.L, originalLab.a, originalLab.b);
             colorBlock.style.display = 'block';
             colorGrid.style.display = 'none';
@@ -168,9 +193,16 @@
             colorBlock.onclick = showRandomColors; // Show random colors on click
         }
 
-        easyButton.addEventListener('click', () => { difficulty = 9; startGame(); });
-        mediumButton.addEventListener('click', () => { difficulty = 25; startGame(); });
-        hardButton.addEventListener('click', () => { difficulty = 100; startGame(); });
+        function setActiveTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+        }
+
+        easyTab.addEventListener('click', () => { difficulty = 9; setActiveTab(easyTab); startGame(); });
+        mediumTab.addEventListener('click', () => { difficulty = 25; setActiveTab(mediumTab); startGame(); });
+        hardTab.addEventListener('click', () => { difficulty = 100; setActiveTab(hardTab); startGame(); });
+        grayscaleTab.addEventListener('click', () => { colorMode = 'grayscale'; setActiveTab(grayscaleTab); startGame(); });
+        colorTab.addEventListener('click', () => { colorMode = 'color'; setActiveTab(colorTab); startGame(); });
         restartButton.addEventListener('click', startGame);
 
         startGame();
